@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'pin.dart'; // Mengimpor file pin.dart
-import 'homepage.dart'; // Mengimpor homepage.dart
+import 'pin.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'set_pin.dart';
 
 void main() async {
   await Hive.initFlutter();
@@ -15,9 +15,8 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: PinPage(), // Menggunakan PinPage sebagai halaman utama
+      home: SetInitialPinPage(), // Menggunakan PinPage sebagai halaman utama
     );
   }
 }
 
-// HomePage bisa tetap di-import dan digunakan di sini jika Anda ingin menambahkan navigasi kembali ke PinPage setelah logout atau sejenisnya.
