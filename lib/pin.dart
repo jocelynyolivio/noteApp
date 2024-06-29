@@ -1,6 +1,6 @@
-// test awal buat pin (jdinya yg dipak set sm enter)
 import 'package:flutter/material.dart';
 import 'homepage.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class PinPage extends StatefulWidget {
   const PinPage({Key? key}) : super(key: key);
@@ -16,7 +16,7 @@ class _PinPageState extends State<PinPage> {
   @override
   void initState() {
     super.initState();
-    initialPin = ''; // Atur nilai default atau kosong untuk PIN awal
+    initialPin = ''; // Set default or empty initial PIN
   }
 
   @override
@@ -39,21 +39,24 @@ class _PinPageState extends State<PinPage> {
                 ),
                 onChanged: (value) {
                   setState(() {
-                    initialPin = value; // Menyimpan PIN awal dari input pengguna
+                    initialPin = value; // Save initial PIN from user input
                   });
                 },
               ),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                // Save initial PIN to Hive
+                await Hive.box('myBox').put('initialPin', initialPin);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Initial PIN set successfully.'),
+                    content: Text('Initial PIN set successfully and saved.'),
                   ),
                 );
               },
               child: const Text('Submit'),
             ),
+
             const SizedBox(height: 20),
             const Text(
               'Enter Your PIN',
@@ -69,17 +72,18 @@ class _PinPageState extends State<PinPage> {
                 ),
                 onChanged: (value) {
                   setState(() {
-                    enteredPin = value; // Menyimpan PIN yang dimasukkan pengguna
+                    enteredPin = value; // Save entered PIN from user input
                   });
                 },
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                if (enteredPin == initialPin) {
+              onPressed: () async {
+                final storedPin = Hive.box('myBox').get('initialPin');
+                if (enteredPin == storedPin) {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const HomePage()),
+                    MaterialPageRoute(builder: (context) => HomePage()),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(

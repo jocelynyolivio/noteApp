@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'pin.dart';
+// import 'pin.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'set_pin.dart';
 
 void main() async {
   await Hive.initFlutter();
   await Hive.openBox('myBox');
+  // Hive.box('myBox').clear();
+
+  await Hive.openBox('container');
   runApp(const MainApp());
 }
 
@@ -15,7 +18,9 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: SetInitialPinPage(), // Menggunakan PinPage sebagai halaman utama
+      debugShowCheckedModeBanner: false,
+      home: SetPinPage(), // Menggunakan PinPage sebagai halaman utama
+      // home: PinPage(),
     );
   }
 }
