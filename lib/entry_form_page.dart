@@ -24,30 +24,35 @@ class _EntryFormPageState extends State<EntryFormPage> {
   }
 
   void writeData(BuildContext context) {
-    final _myBox = Hive.box('container');
-    final currentTimestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+  final _myBox = Hive.box('container');
+  final currentTimestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
 
-    if (widget.initialTitle == null) {
-      // Menambahkan entry baru
-      _myBox.put(_titleController.text, {
-        'content': _contentController.text,
-        'timestamp': currentTimestamp
-      });
-    } else {
-      // Mengedit entry yang sudah ada
-      String oldTitle = widget.initialTitle!;
-      
-      if (_titleController.text != oldTitle) {
-        _myBox.delete(oldTitle); // Menghapus entry lama jika judulnya berubah
-      }
-      
-      _myBox.put(_titleController.text, {
-        'content': _contentController.text,
-        'timestamp': currentTimestamp
-      });
+  if (widget.initialTitle == null) {
+    // Menambahkan entry baru
+    _myBox.put(_titleController.text, {
+      'content': _contentController.text,
+      'timestamp': currentTimestamp,
+      'creationDate': currentTimestamp // Menyimpan tanggal pembuatan
+    });
+  } else {
+    // Mengedit entry yang sudah ada
+    String oldTitle = widget.initialTitle!;
+    final existingData = _myBox.get(oldTitle);
+    String creationDate = existingData['creationDate']; // Mengambil tanggal pembuatan yang sudah ada
+
+    if (_titleController.text != oldTitle) {
+      _myBox.delete(oldTitle); // Menghapus entry lama jika judulnya berubah
     }
-    Navigator.pop(context); // Kembali ke HomePage setelah menulis data
+    
+    _myBox.put(_titleController.text, {
+      'content': _contentController.text,
+      'timestamp': currentTimestamp,
+      'creationDate': creationDate // Mempertahankan tanggal pembuatan yang sudah ada
+    });
   }
+  Navigator.pop(context); // Kembali ke HomePage setelah menulis data
+}
+
 
   @override
   Widget build(BuildContext context) {
