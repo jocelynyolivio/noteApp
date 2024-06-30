@@ -17,21 +17,17 @@ class _EnterPinPageState extends State<EnterPinPage> {
     TextEditingController(),
     TextEditingController(),
   ];
+  final List<FocusNode> _focusNodes = [
+    FocusNode(),
+    FocusNode(),
+    FocusNode(),
+    FocusNode(),
+  ];
 
   @override
   void initState() {
     super.initState();
-    pinEntries = ['', '', '', '']; // Initialize list for 4 PIN digits
-
-    // Add listener to each controller for automatic navigation
-    for (int i = 0; i < _controllers.length; i++) {
-      _controllers[i].addListener(() {
-        if (_controllers[i].text.length == 1 && i < _controllers.length - 1) {
-          // Move focus to the next TextField
-          FocusScope.of(context).nextFocus();
-        }
-      });
-    }
+    pinEntries = ['', '', '', '']; // for 4 PIN digits
   }
 
   @override
@@ -39,7 +35,22 @@ class _EnterPinPageState extends State<EnterPinPage> {
     for (var controller in _controllers) {
       controller.dispose();
     }
+    for (var focusNode in _focusNodes) {
+      focusNode.dispose();
+    }
     super.dispose();
+  }
+
+  void _handleTextFieldChange(String value, int index) {
+    setState(() {
+      pinEntries[index] = value;
+    });
+
+    if (value.isNotEmpty && index < _controllers.length - 1) {
+      _focusNodes[index + 1].requestFocus();
+    } else if (value.isEmpty && index > 0) {
+      _focusNodes[index - 1].requestFocus();
+    }
   }
 
   @override
@@ -47,7 +58,11 @@ class _EnterPinPageState extends State<EnterPinPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('Enter Your PIN'),
+        title: const Text(
+          'Enter PIN',
+          style: TextStyle(color: Colors.white), // Warna teks hijau tosca muda
+        ),
+        backgroundColor: Colors.teal[800], // Hijau tosca gelap
       ),
       body: Center(
         child: Column(
@@ -55,7 +70,7 @@ class _EnterPinPageState extends State<EnterPinPage> {
           children: <Widget>[
             const Text(
               'Enter Your PIN',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 0, 69, 62)),
             ),
             Padding(
               padding: const EdgeInsets.all(20.0),
@@ -66,6 +81,7 @@ class _EnterPinPageState extends State<EnterPinPage> {
                     width: 50,
                     child: TextField(
                       controller: _controllers[index],
+                      focusNode: _focusNodes[index],
                       obscureText: true,
                       textAlign: TextAlign.center,
                       maxLength: 1,
@@ -75,9 +91,7 @@ class _EnterPinPageState extends State<EnterPinPage> {
                         counterText: '', // Hide character counter
                       ),
                       onChanged: (value) {
-                        setState(() {
-                          pinEntries[index] = value;
-                        });
+                        _handleTextFieldChange(value, index);
                       },
                     ),
                   );
@@ -102,6 +116,10 @@ class _EnterPinPageState extends State<EnterPinPage> {
                   );
                 }
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal[700], // Hijau tosca gelap
+                foregroundColor: Colors.white, // Warna teks
+              ),
               child: const Text('Submit'),
             ),
           ],
