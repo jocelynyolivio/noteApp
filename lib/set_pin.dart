@@ -70,6 +70,9 @@ class _SetPinPageState extends State<SetPinPage> {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.teal[800],
+        iconTheme: IconThemeData(
+          color: Colors.white,
+        ),
       ),
       body: Center(
         child: Column(
