@@ -21,63 +21,75 @@ class _EntryFormPageState extends State<EntryFormPage> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.initialTitle ?? '');
-    _contentController =TextEditingController(text: widget.initialContent ?? '');
+    _contentController =
+        TextEditingController(text: widget.initialContent ?? '');
   }
 
   void writeData(BuildContext context) {
-  final _myBox = Hive.box('container');
-  final currentTimestamp = DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.now());
+    final _container = Hive.box('container');
+    final currentTimestamp =
+        DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.now());
 
-  //input tidak boleh kosong
-  if (_titleController.text.isEmpty && _contentController.text.isEmpty) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Error'),
-        content: Text('Title and content cannot be empty.'),
-        actions: <Widget>[
-          TextButton(
-            child: Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
+    //input tidak boleh kosong
+    if (_titleController.text.isEmpty && _contentController.text.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.white,
+          title: Text(
+            'Error',
+            style: TextStyle(color: Colors.teal),
           ),
-        ],
-      ),
-    );
-    return;
+          content: Text(
+            'Title and content cannot be empty.',
+            style: TextStyle(color: Colors.black),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                'OK',
+                style: TextStyle(color: Colors.teal),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    //kalau title kosong auto new note
+    if (_titleController.text.isEmpty) {
+      _titleController.text = "New Note";
+    }
+
+    // Lanjutkan dengan menyimpan data
+    if (widget.initialKey == null) {
+      // unique key
+      String newKey = DateTime.now().millisecondsSinceEpoch.toString();
+      _container.put(newKey, {
+        'title': _titleController.text,
+        'content': _contentController.text,
+        'timestamp': currentTimestamp,
+        'creationDate': currentTimestamp,
+      });
+    } else {
+      // Mengedit entry yang sudah ada
+      final existingData = _container.get(widget.initialKey);
+      String creationDate = existingData[
+          'creationDate']; // Mengambil tanggal pembuatan yang sudah ada
+
+      _container.put(widget.initialKey, {
+        'title': _titleController.text,
+        'content': _contentController.text,
+        'timestamp': currentTimestamp, // Waktu saat ini untuk timestamp
+        'creationDate': creationDate, // tidak berubah
+      });
+    }
+    Navigator.pop(context);
   }
-
-  //kalau title kosong auto new note 
-  if(_titleController.text.isEmpty){
-    _titleController.text = "New Note";
-  }
-
-  // Lanjutkan dengan menyimpan data
-  if (widget.initialKey == null) {
-    // unique key
-    String newKey = DateTime.now().millisecondsSinceEpoch.toString();
-    _myBox.put(newKey, {
-      'title': _titleController.text,
-      'content': _contentController.text,
-      'timestamp': currentTimestamp,
-      'creationDate': currentTimestamp,
-    });
-  } else {
-    // Mengedit entry yang sudah ada
-    final existingData = _myBox.get(widget.initialKey);
-    String creationDate = existingData['creationDate']; // Mengambil tanggal pembuatan yang sudah ada
-
-    _myBox.put(widget.initialKey, {
-      'title': _titleController.text,
-      'content': _contentController.text,
-      'timestamp': currentTimestamp, // Waktu saat ini untuk timestamp
-      'creationDate': creationDate, // tidak berubah
-    });
-  }
-  Navigator.pop(context);
-}
-
 
   @override
   Widget build(BuildContext context) {
