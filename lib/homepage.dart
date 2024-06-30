@@ -210,12 +210,10 @@ class _HomePageState extends State<HomePage> {
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    backgroundColor:
-                        Colors.red,
+                    backgroundColor: Colors.red,
                     content: Text(
                       'Incorrect PIN. Please try again.',
-                      style: TextStyle(
-                          color: Colors.white),
+                      style: TextStyle(color: Colors.white),
                     ),
                   ),
                 );
@@ -251,7 +249,8 @@ class _HomePageState extends State<HomePage> {
           DropdownButton<String>(
             value: _sortCriteria,
             icon: const Icon(Icons.sort, color: Colors.white),
-            dropdownColor: Colors.white,
+            dropdownColor: Colors
+                .teal[800], // Ubah warna latar belakang dropdown menjadi hijau
             underline: Container(),
             onChanged: (String? newValue) {
               setState(() {
@@ -267,8 +266,9 @@ class _HomePageState extends State<HomePage> {
                   value == 'title' ? 'Sort by Title' : 'Sort by Last Modified',
                   style: TextStyle(
                     color: _sortCriteria == value
-                        ? Colors.teal[800]
-                        : Colors.black,
+                        ? Colors.white
+                        : Colors
+                            .black, // Ubah warna teks berdasarkan nilai terpilih atau tidak
                   ),
                 ),
               );
@@ -332,8 +332,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.black),
-                    onPressed: () =>
-                        deleteData(key), // deleteData with key
+                    onPressed: () => deleteData(key), // deleteData with key
                   ),
                 ],
               ),
