@@ -7,10 +7,10 @@ void main() async {
 
   await Hive.openBox('myBox');
   
-  // Hive.box('myBox').clear();
+  Hive.box('myBox').clear();
   
   await Hive.openBox('container');
-  // Hive.box('container').clear();
+  Hive.box('container').clear();
 
   runApp(const MainApp());
 }

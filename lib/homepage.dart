@@ -26,9 +26,15 @@ class _HomePageState extends State<HomePage> {
 
 // untuk sorting default title, bisa lastModified
   void sortEntries() {
-    if (_sortCriteria == 'title') {
-      allEntries.sort();
-    } else if (_sortCriteria == 'lastModified') {
+     if (_sortCriteria == 'title') {
+    allEntries.sort((a, b) {
+      final aData = _container.get(a);
+      final bData = _container.get(b);
+      final aTitle = aData['title'].toLowerCase(); // Ubah ke lowercase untuk konsistensi
+      final bTitle = bData['title'].toLowerCase();
+      return aTitle.compareTo(bTitle); // Urutkan berdasarkan title secara ascending
+    });
+  } else if (_sortCriteria == 'lastModified') {
       allEntries.sort((a, b) {
         final aData = _container.get(a);
         final bData = _container.get(b);
