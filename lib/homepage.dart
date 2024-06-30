@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'entry_form_page.dart';
-import 'enter_pin.dart'; // Import enter_pin.dart
-import 'set_pin.dart'; // Import set_pin.dart
+import 'enter_pin.dart';
+import 'set_pin.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -16,6 +16,7 @@ class _HomePageState extends State<HomePage> {
   List<String> allEntries = [];
   String _sortCriteria = 'title'; // Default sorting by title
 
+// mengeluarkan semua notes
   void getAllEntries() {
     setState(() {
       allEntries = _container.keys.cast<String>().toList();
@@ -23,6 +24,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+// untuk sorting default title, bisa lastModified
   void sortEntries() {
     if (_sortCriteria == 'title') {
       allEntries.sort();
@@ -32,12 +34,12 @@ class _HomePageState extends State<HomePage> {
         final bData = _container.get(b);
         final aTimestamp = aData['timestamp'];
         final bTimestamp = bData['timestamp'];
-        return bTimestamp
-            .compareTo(aTimestamp); // Sort by last modified in descending order
+        return bTimestamp.compareTo(aTimestamp); //desc
       });
     }
   }
 
+// untuk delete data dengan modal/dialog
   void deleteData(String key) {
     showDialog(
       context: context,
@@ -49,18 +51,18 @@ class _HomePageState extends State<HomePage> {
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close dialog without deleting
+                Navigator.of(context).pop();
               },
               child: Text('Cancel', style: TextStyle(color: Colors.teal)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal[800], // Tosca green accent
+                backgroundColor: Colors.teal[800],
               ),
               onPressed: () {
-                Navigator.of(context).pop(); // Close dialog before deleting
+                Navigator.of(context).pop(); // Close dialog
                 _container.delete(key);
-                getAllEntries(); // Update the list after deleting
+                getAllEntries(); // Update list setelah delete
               },
               child: Text(
                 'Delete',
@@ -73,22 +75,28 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+// untuk edit data -> redirect ke page lain
   void editData(String key) {
-    Map? data = _container.get(key);
-    String? initialContent = data?['content'];
+    Map? data = _container.get(key); // ambil dari hive bedasarkan key
+
+    String? initialTitle = data?['title']; // title
+    String? initialContent = data?['content']; // content
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => EntryFormPage(
-          initialTitle: key,
-          initialContent: initialContent,
+          initialKey: key, // Meneruskan key yang asli
+          initialTitle: initialTitle, // Meneruskan title yang asli
+          initialContent: initialContent, // Meneruskan content yang asli
         ),
       ),
     ).then((_) {
-      getAllEntries(); // Refresh list after returning from EntryFormPage
+      getAllEntries(); // Update List
     });
   }
 
+// logout dengan dialog dan kembali ke enter_pin
   void logout() {
     showDialog(
       context: context,
@@ -100,21 +108,26 @@ class _HomePageState extends State<HomePage> {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(); // Close dialog without logging out
+              Navigator.of(context).pop();
             },
             child: const Text('Cancel', style: TextStyle(color: Colors.teal)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.teal[800], // Tosca green accent
+              backgroundColor: Colors.teal[800],
             ),
             onPressed: () {
-              Navigator.of(context).pop(); // Close dialog before logging out
-              performLogout(); // Execute logout function after confirmation
+              Navigator.of(context).pop();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EnterPinPage(),
+                ),
+              );
             },
             child: const Text(
               'Log out',
-              style: TextStyle(color: Colors.white), // Text color set to white
+              style: TextStyle(color: Colors.white),
             ),
           ),
         ],
@@ -122,15 +135,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void performLogout() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EnterPinPage(), // Replace with appropriate page
-      ),
-    );
-  }
-
+// reset harus masukkan current pin dulu bentuk modal
   void resetPin() async {
     final storedPin = await Hive.box('myBox').get('initialPin');
 
@@ -166,14 +171,12 @@ class _HomePageState extends State<HomePage> {
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
-                      counterText: '', // Hide character counter
+                      counterText: '',
                     ),
                     onChanged: (value) {
                       if (value.isNotEmpty && index < 3) {
-                        // Auto move focus to the next TextField
                         FocusScope.of(context).nextFocus();
                       } else if (value.isEmpty && index > 0) {
-                        // Auto move focus to the previous TextField on deletion
                         FocusScope.of(context).previousFocus();
                       }
                     },
@@ -186,34 +189,41 @@ class _HomePageState extends State<HomePage> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(); // Close dialog without changing PIN
+              Navigator.of(context).pop();
             },
             child: const Text('Cancel', style: TextStyle(color: Colors.teal)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.teal[800], // Tosca green accent
+              backgroundColor: Colors.teal[800],
             ),
             onPressed: () {
               String enteredPin = pinControllers.map((e) => e.text).join();
+              // cek kalau benar current pin nya
               if (enteredPin == storedPin) {
-                Navigator.of(context)
-                    .pop(); // Close dialog after PIN confirmation
+                Navigator.of(context).pop();
                 Navigator.push(
                   context,
+                  // baru boleh set_pin
                   MaterialPageRoute(builder: (context) => SetPinPage()),
                 );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Incorrect PIN. Please try again.'),
+                    backgroundColor:
+                        Colors.red,
+                    content: Text(
+                      'Incorrect PIN. Please try again.',
+                      style: TextStyle(
+                          color: Colors.white),
+                    ),
                   ),
                 );
               }
             },
             child: const Text(
               'Submit',
-              style: TextStyle(color: Colors.white), // Text color set to white
+              style: TextStyle(color: Colors.white),
             ),
           ),
         ],
@@ -281,6 +291,7 @@ class _HomePageState extends State<HomePage> {
         itemBuilder: (context, index) {
           final key = allEntries[index];
           final data = _container.get(key);
+          final title = data?['title'];
           final value = data?['content'];
           final timestamp = data?['timestamp'];
           final creationDate = data?['creationDate'];
@@ -291,10 +302,10 @@ class _HomePageState extends State<HomePage> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
-            color: Colors.green[100], // Light teal color
+            color: Colors.green[100],
             child: ListTile(
               title: Text(
-                key,
+                title,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               subtitle: Column(
@@ -322,7 +333,7 @@ class _HomePageState extends State<HomePage> {
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.black),
                     onPressed: () =>
-                        deleteData(key), // Call deleteData with key
+                        deleteData(key), // deleteData with key
                   ),
                 ],
               ),
@@ -339,10 +350,10 @@ class _HomePageState extends State<HomePage> {
             getAllEntries();
           });
         },
-        backgroundColor: Colors.teal[800], // Lighter teal color
+        backgroundColor: Colors.teal[800],
         child: Icon(
           Icons.add,
-          color: Colors.white, // Set icon color to white
+          color: Colors.white,
         ),
       ),
     );

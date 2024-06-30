@@ -10,14 +10,16 @@ class EnterPinPage extends StatefulWidget {
 }
 
 class _EnterPinPageState extends State<EnterPinPage> {
-  late List<String> pinEntries;
+  late List<String> pinEntries; // List untuk pin
   final List<TextEditingController> _controllers = [
+    //TextField
     TextEditingController(),
     TextEditingController(),
     TextEditingController(),
     TextEditingController(),
   ];
   final List<FocusNode> _focusNodes = [
+    // List untuk auto pindah focus
     FocusNode(),
     FocusNode(),
     FocusNode(),
@@ -27,29 +29,34 @@ class _EnterPinPageState extends State<EnterPinPage> {
   @override
   void initState() {
     super.initState();
-    pinEntries = ['', '', '', '']; // for 4 PIN digits
+    pinEntries = ['', '', '', '']; // Inisialisasi 4 digit PIN
   }
 
   @override
   void dispose() {
     for (var controller in _controllers) {
+      // Memastikan untuk dispose semua controller
       controller.dispose();
     }
     for (var focusNode in _focusNodes) {
+      // Memastikan untuk dispose semua focus node
       focusNode.dispose();
     }
     super.dispose();
   }
 
+  // Perubahan pada TextField
   void _handleTextFieldChange(String value, int index) {
     setState(() {
       pinEntries[index] = value;
     });
 
     if (value.isNotEmpty && index < _controllers.length - 1) {
-      _focusNodes[index + 1].requestFocus();
+      _focusNodes[index + 1]
+          .requestFocus(); // Pindah fokus ke TextField berikutnya jika tidak kosong
     } else if (value.isEmpty && index > 0) {
-      _focusNodes[index - 1].requestFocus();
+      _focusNodes[index - 1]
+          .requestFocus(); // Pindah fokus ke TextField sebelumnya jika kosong
     }
   }
 
@@ -60,9 +67,9 @@ class _EnterPinPageState extends State<EnterPinPage> {
         automaticallyImplyLeading: false,
         title: const Text(
           'Enter PIN',
-          style: TextStyle(color: Colors.white), // Warna teks hijau tosca muda
+          style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Colors.teal[800], // Hijau tosca gelap
+        backgroundColor: Colors.teal[800],
       ),
       body: Center(
         child: Column(
@@ -70,7 +77,10 @@ class _EnterPinPageState extends State<EnterPinPage> {
           children: <Widget>[
             const Text(
               'Enter Your PIN',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 0, 69, 62)),
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color.fromARGB(255, 0, 69, 62)),
             ),
             Padding(
               padding: const EdgeInsets.all(20.0),
@@ -80,17 +90,23 @@ class _EnterPinPageState extends State<EnterPinPage> {
                   return SizedBox(
                     width: 50,
                     child: TextField(
-                      controller: _controllers[index],
-                      focusNode: _focusNodes[index],
+                      controller: _controllers[
+                          index], // Menggunakan controller sesuai index
+                      focusNode: _focusNodes[
+                          index], // Menggunakan focus node sesuai index
                       obscureText: true,
                       textAlign: TextAlign.center,
                       maxLength: 1,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        counterText: '', // Hide character counter
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        counterText: '',
                       ),
+
                       onChanged: (value) {
+                        // onchange panggil function
                         _handleTextFieldChange(value, index);
                       },
                     ),
@@ -100,25 +116,33 @@ class _EnterPinPageState extends State<EnterPinPage> {
             ),
             ElevatedButton(
               onPressed: () async {
-                String enteredPin = pinEntries.join(); // Combine entries into enteredPin
-                final storedPin = Hive.box('myBox').get('initialPin');
+                String enteredPin =
+                    pinEntries.join(); // Menggabungkan entri menjadi enteredPin
+                final storedPin = Hive.box('myBox')
+                    .get('initialPin'); // Mendapatkan initialPin dari Hive
 
                 if (enteredPin == storedPin) {
                   Navigator.push(
+                    // Navigate ke halaman HomePage jika PIN benar
                     context,
                     MaterialPageRoute(builder: (context) => HomePage()),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
+                    // Tampilkan Snackbar jika PIN salah
                     const SnackBar(
-                      content: Text('Incorrect PIN. Please try again.'),
+                      backgroundColor: Colors.red,
+                      content: Text(
+                        'Incorrect PIN. Please try again.',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   );
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal[700], // Hijau tosca gelap
-                foregroundColor: Colors.white, // Warna teks
+                backgroundColor: Colors.teal[700],
+                foregroundColor: Colors.white,
               ),
               child: const Text('Submit'),
             ),
